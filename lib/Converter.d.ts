@@ -1,5 +1,4 @@
-/// <reference types="node" />
 import { Packet } from './Packet';
-declare const encodePacket: (packet: Packet) => Buffer;
-declare const decodePacket: (buffer: ArrayBuffer) => Packet;
+declare const encodePacket: (packet: Packet) => ArrayBufferLike;
+declare const decodePacket: (buffer: ArrayBufferLike) => Packet;
 export { encodePacket, decodePacket, };

@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
     "sourceMap": true,
-    "strict": true,
-    "outDir": "dist"
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "target": "es5",
+    "jsx": "react",
+    "lib": [
+      "dom",
+      "es6"
+    ]
   },
-  "lib": [
-    "es2015"
-  ],
   "include": [
     "example/**/*.ts",
     "src/**/*.ts"
@@ -18,5 +21,6 @@
     "./tests",
     "./dist",
     "./backup"
-  ]
+  ],
+  "compileOnSave": false
 }

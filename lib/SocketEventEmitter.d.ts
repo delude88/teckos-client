@@ -1,6 +1,4 @@
-/// <reference types="node" />
-import { EventEmitter } from 'events';
-declare class SocketEventEmitter<T extends string> extends EventEmitter {
+declare class SocketEventEmitter<T extends string> {
     protected _maxListeners: number;
     protected _handlers: {
         [event: string]: ((...args: any[]) => void)[];
@@ -15,7 +13,7 @@ declare class SocketEventEmitter<T extends string> extends EventEmitter {
     listeners: (event: T) => Function[];
     rawListeners: (event: T) => Function[];
     listenerCount: (event: T) => number;
-    prependListener: (event: any, listener: (...args: any[]) => void) => this;
+    prependListener: (event: T, listener: (...args: any[]) => void) => this;
     prependOnceListener: (event: T, listener: (...args: any[]) => void) => this;
     eventNames: () => (T)[];
     on: (event: T, listener: (...args: any[]) => void) => this;

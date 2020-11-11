@@ -1,7 +1,5 @@
-import { EventEmitter } from 'events';
-
-class SocketEventEmitter<T extends string> extends EventEmitter {
-  protected _maxListeners: number = 10;
+class SocketEventEmitter<T extends string> {
+  protected _maxListeners: number = 50;
 
   protected _handlers: {
     [event: string]: ((...args: any[]) => void)[]

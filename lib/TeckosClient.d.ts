@@ -1,4 +1,3 @@
-import { w3cwebsocket as W3CWebSocket } from 'websocket';
 import SocketEventEmitter from './SocketEventEmitter';
 import SocketEvent from './SocketEvent';
 export interface WebSocketConnectionOptions {
@@ -8,23 +7,27 @@ export interface WebSocketConnectionOptions {
     reconnectionDelayMax?: number;
     timeout?: number;
 }
-declare class WebSocket extends SocketEventEmitter<SocketEvent> {
+declare class TeckosClient extends SocketEventEmitter<SocketEvent> {
+    private readonly _url;
+    protected _reconnectDelay: number;
+    protected _reconnectionsAttemps: number;
     private _acks;
     private _fnId;
-    protected readonly _options: WebSocketConnectionOptions;
-    protected readonly _ws: W3CWebSocket;
+    protected readonly _options: WebSocketConnectionOptions | undefined;
+    protected _ws: WebSocket | undefined;
     constructor(url: string, options?: WebSocketConnectionOptions);
+    protected _attachHandler: () => void;
+    connect: () => void;
+    protected _reconnect: () => void;
     get connected(): boolean;
     get disconnected(): boolean;
     emit: (event: SocketEvent, ...args: any[]) => boolean;
     send: (...args: any[]) => boolean;
     private _send;
-    protected _handleMessage: (msg: {
-        data: ArrayBuffer;
-    }) => void;
+    protected _handleMessage: (msg: MessageEvent) => void;
     protected _handleOpen: () => void;
-    protected _handleError: (error: Error) => void;
+    protected _handleError: (error: Event) => void;
     protected _handleClose: () => void;
     close: () => void;
 }
-export default WebSocket;
+export default TeckosClient;
