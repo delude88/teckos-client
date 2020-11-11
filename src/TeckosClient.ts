@@ -1,57 +1,50 @@
-import SocketEventEmitter from './SocketEventEmitter';
-import SocketEvent from './SocketEvent';
-import { decodePacket, encodePacket } from './Converter';
-import { Packet, PacketType } from './Packet';
-
-export interface WebSocketConnectionOptions {
-  reconnection: boolean;
-  reconnectionAttempts?: number;
-  reconnectionDelay?: number;
-  reconnectionDelayMax?: number;
-  timeout?: number;
-}
+import SocketEventEmitter from './util/SocketEventEmitter';
+import { decodePacket, encodePacket } from './util/Converter';
+import {
+  Packet, PacketType, TeckosConnectionOptions, SocketEvent,
+} from './types';
 
 class TeckosClient extends SocketEventEmitter<SocketEvent> {
-  private readonly _url: string;
+  private readonly url: string;
 
-  protected _reconnectDelay: number = 250;
+  protected reconnectDelay: number = 250;
 
-  protected _reconnectionsAttemps: number = 0;
+  protected reconnectionsAttemps: number = 0;
 
-  private _acks: Map<number, (...args: any[]) => void> = new Map();
+  private acks: Map<number, (...args: any[]) => void> = new Map();
 
-  private _fnId: number = 0;
+  private fnId: number = 0;
 
-  protected readonly _options: WebSocketConnectionOptions | undefined;
+  protected readonly options: TeckosConnectionOptions | undefined;
 
-  protected _ws: WebSocket | undefined;
+  protected ws: WebSocket | undefined;
 
-  constructor(url: string, options?: WebSocketConnectionOptions) {
+  constructor(url: string, options?: TeckosConnectionOptions) {
     super();
-    this._options = options;
-    this._url = url;
+    this.options = options;
+    this.url = url;
   }
 
-  protected _attachHandler = () => {
-    if (this._ws) {
-      this._ws.onopen = this._handleOpen;
-      this._ws.onerror = this._handleError;
-      this._ws.onclose = this._handleClose;
-      this._ws.onmessage = this._handleMessage;
+  protected attachHandler = () => {
+    if (this.ws) {
+      this.ws.onopen = this.handleOpen;
+      this.ws.onerror = this.handleError;
+      this.ws.onclose = this.handleClose;
+      this.ws.onmessage = this.handleMessage;
     }
   };
 
   public connect = () => {
-    this._ws = new WebSocket(this._url);
-    this._attachHandler();
+    this.ws = new WebSocket(this.url);
+    this.attachHandler();
   };
 
-  protected _reconnect = () => {
+  protected reconnect = () => {
     this.connect();
   };
 
   public get connected(): boolean {
-    return this._ws !== undefined && this._ws.readyState === 1;
+    return this.ws !== undefined && this.ws.readyState === 1;
   }
 
   public get disconnected() {
@@ -67,32 +60,32 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     };
 
     if (typeof args[args.length - 1] === 'function') {
-      this._acks.set(this._fnId, args.pop());
-      packet.id = this._fnId;
-      this._fnId += 1;
+      this.acks.set(this.fnId, args.pop());
+      packet.id = this.fnId;
+      this.fnId += 1;
     }
 
-    return this._send(packet);
+    return this.sendPackage(packet);
   };
 
   public send = (...args: any[]): boolean => {
     args.unshift('message');
-    return this._send({
+    return this.sendPackage({
       type: PacketType.EVENT,
       data: args,
     });
   };
 
-  private _send = (packet: Packet): boolean => {
-    if (this._ws !== undefined && this.connected) {
+  private sendPackage = (packet: Packet): boolean => {
+    if (this.ws !== undefined && this.connected) {
       const buffer = encodePacket(packet);
-      this._ws.send(buffer);
+      this.ws.send(buffer);
       return true;
     }
     return false;
   };
 
-  protected _handleMessage = (msg: MessageEvent) => {
+  protected handleMessage = (msg: MessageEvent) => {
     const packet = typeof msg.data === 'string' ? JSON.parse(msg.data) : decodePacket(msg.data);
 
     if (packet.type === PacketType.EVENT) {
@@ -105,46 +98,46 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
       }
     } else if (packet.type === PacketType.ACK && packet.id !== undefined) {
       // Call assigned function
-      const ack = this._acks.get(packet.id);
+      const ack = this.acks.get(packet.id);
       if (typeof ack === 'function') {
         ack.apply(this, packet.data);
-        this._acks.delete(packet.id);
+        this.acks.delete(packet.id);
       }
     } else {
       console.error(`Invalid type: ${packet.type}`);
     }
   };
 
-  protected _handleOpen = () => {
-    if (this._reconnectionsAttemps > 0) {
+  protected handleOpen = () => {
+    if (this.reconnectionsAttemps > 0) {
       this.listeners('reconnect').forEach((listener) => listener());
     } else {
       this.listeners('connect').forEach((listener) => listener());
     }
   };
 
-  protected _handleError = (error: Event) => {
-    if (this._handlers && this._handlers.error) {
-      this._handlers.error.forEach((listener) => listener(error));
+  protected handleError = (error: Event) => {
+    if (this.handlers && this.handlers.error) {
+      this.handlers.error.forEach((listener) => listener(error));
     }
   };
 
-  protected _handleClose = () => {
+  protected handleClose = () => {
     this.listeners('disconnect').forEach((listener) => listener());
 
     // Try reconnect
-    this._reconnectDelay = (this._options && this._options.reconnectionDelay) || 250;
+    this.reconnectDelay = (this.options && this.options.reconnectionDelay) || 250;
     setTimeout(() => {
-      this._reconnectionsAttemps += 1;
-      this._reconnect();
+      this.reconnectionsAttemps += 1;
+      this.reconnect();
     }, Math.min(
-      (this._options && this._options.reconnectionDelayMax)
-      || 4000, this._reconnectDelay + this._reconnectDelay,
+      (this.options && this.options.reconnectionDelayMax)
+      || 4000, this.reconnectDelay + this.reconnectDelay,
     ));
   };
 
   public close = () => {
-    if (this._ws !== undefined) this._ws.close();
+    if (this.ws !== undefined) this.ws.close();
   };
 }
 

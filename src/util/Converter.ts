@@ -1,4 +1,4 @@
-import { Packet } from './Packet';
+import { Packet } from '../types';
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();

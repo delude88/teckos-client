@@ -1,27 +1,27 @@
 import TeckosClient from './TeckosClient';
 
 class TeckosClientWithJWT extends TeckosClient {
-  private _token: string;
+  private readonly token: string;
 
-  private _initialData: any;
+  private readonly initialData: any;
 
   constructor(url: string, token: string, initialData?: any) {
     super(url);
-    this._token = token;
-    this._initialData = initialData;
+    this.token = token;
+    this.initialData = initialData;
   }
 
-  protected _handleOpen = () => {
+  protected handleOpen = () => {
     this.once('ready', () => {
-      if (this._reconnectionsAttemps > 0) {
+      if (this.reconnectionsAttemps > 0) {
         this.listeners('reconnect').forEach((listener) => listener());
       } else {
         this.listeners('connect').forEach((listener) => listener());
       }
     });
     this.emit('token', {
-      token: this._token,
-      ...this._initialData,
+      token: this.token,
+      ...this.initialData,
     });
   };
 }

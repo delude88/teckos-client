@@ -1,7 +1,4 @@
-export enum PacketType {
-  EVENT,
-  ACK,
-}
+import PacketType from './PacketType';
 
 export interface Packet {
   type: PacketType,
