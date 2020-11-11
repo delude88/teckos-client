@@ -1,7 +1,8 @@
 {
   "name": "teckos-client",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "uWebsocket.js based client component supporting async callbacks",
+  "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
