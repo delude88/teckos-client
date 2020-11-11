@@ -1,9 +1,9 @@
 import TeckosClient from './TeckosClient';
 
 class TeckosClientWithJWT extends TeckosClient {
-  private readonly token: string;
+  protected readonly token: string;
 
-  private readonly initialData: any;
+  protected readonly initialData: any;
 
   constructor(url: string, token: string, initialData?: any) {
     super(url);

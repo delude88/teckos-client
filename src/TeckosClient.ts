@@ -5,15 +5,15 @@ import {
 } from './types';
 
 class TeckosClient extends SocketEventEmitter<SocketEvent> {
-  private readonly url: string;
+  protected readonly url: string;
 
   protected reconnectDelay: number = 250;
 
   protected reconnectionsAttemps: number = 0;
 
-  private acks: Map<number, (...args: any[]) => void> = new Map();
+  protected acks: Map<number, (...args: any[]) => void> = new Map();
 
-  private fnId: number = 0;
+  protected fnId: number = 0;
 
   protected readonly options: TeckosConnectionOptions | undefined;
 
@@ -76,7 +76,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     });
   };
 
-  private sendPackage = (packet: Packet): boolean => {
+  protected sendPackage = (packet: Packet): boolean => {
     if (this.ws !== undefined && this.connected) {
       const buffer = encodePacket(packet);
       this.ws.send(buffer);
