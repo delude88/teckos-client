@@ -1,7 +1,8 @@
 export interface TeckosConnectionOptions {
-  reconnection: boolean;
+  reconnection?: boolean;
   reconnectionAttempts?: number;
   reconnectionDelay?: number;
   reconnectionDelayMax?: number;
   timeout?: number;
+  verbose?: boolean;
 }

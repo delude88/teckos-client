@@ -76,9 +76,16 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     });
   };
 
+  protected debug = (message: string) => {
+    if (this.options && this.options.verbose) {
+      console.debug(message);
+    }
+  };
+
   protected sendPackage = (packet: Packet): boolean => {
     if (this.ws !== undefined && this.connected) {
       const buffer = encodePacket(packet);
+      this.debug(`Send packet: ${JSON.stringify(packet)}`);
       this.ws.send(buffer);
       return true;
     }
@@ -88,6 +95,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   protected handleMessage = (msg: MessageEvent) => {
     const packet = typeof msg.data === 'string' ? JSON.parse(msg.data) : decodePacket(msg.data);
 
+    this.debug(`Got packet: ${JSON.stringify(packet)}`);
     if (packet.type === PacketType.EVENT) {
       const event = packet.data[0];
       const args = packet.data.slice(1);
@@ -110,19 +118,23 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
 
   protected handleOpen = () => {
     if (this.reconnectionsAttemps > 0) {
+      this.debug(`Reconnected to ${this.url}`);
       this.listeners('reconnect').forEach((listener) => listener());
     } else {
+      this.debug(`Connected to ${this.url}`);
       this.listeners('connect').forEach((listener) => listener());
     }
   };
 
   protected handleError = (error: Event) => {
     if (this.handlers && this.handlers.error) {
+      this.debug(`Got error from ${this.url}: ${error}`);
       this.handlers.error.forEach((listener) => listener(error));
     }
   };
 
   protected handleClose = () => {
+    this.debug(`Disconnected from ${this.url}`);
     this.listeners('disconnect').forEach((listener) => listener());
 
     // Try reconnect
@@ -137,6 +149,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   };
 
   public close = () => {
+    this.debug(`Closing connection to ${this.url}`);
     if (this.ws !== undefined) this.ws.close();
   };
 }
