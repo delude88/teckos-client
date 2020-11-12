@@ -1,8 +1,11 @@
+import debug from 'debug';
 import SocketEventEmitter from './util/SocketEventEmitter';
 import { decodePacket, encodePacket } from './util/Converter';
 import {
   Packet, PacketType, TeckosConnectionOptions, SocketEvent,
 } from './types';
+
+const d = debug('teckos:client');
 
 const DEFAULT_OPTIONS = {
   reconnectionDelay: 250,
@@ -42,7 +45,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   };
 
   public connect = () => {
-    this.debug(`Connecting to ${this.url}...`);
+    d(`Connecting to ${this.url}...`);
     this.ws = new WebSocket(this.url);
     this.attachHandler();
   };
@@ -84,16 +87,10 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     });
   };
 
-  protected debug = (message: string) => {
-    if (this.options && this.options.verbose) {
-      console.debug(message);
-    }
-  };
-
   protected sendPackage = (packet: Packet): boolean => {
     if (this.ws !== undefined && this.connected) {
       const buffer = encodePacket(packet);
-      this.debug(`Send packet: ${JSON.stringify(packet)}`);
+      d(`[${this.url}] Send packet: ${JSON.stringify(packet)}`);
       this.ws.send(buffer);
       return true;
     }
@@ -103,14 +100,14 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   protected handleMessage = (msg: MessageEvent) => {
     const packet = typeof msg.data === 'string' ? JSON.parse(msg.data) : decodePacket(msg.data);
 
-    this.debug(`Got packet: ${JSON.stringify(packet)}`);
+    d(`[${this.url}] Got packet: ${JSON.stringify(packet)}`);
     if (packet.type === PacketType.EVENT) {
       const event = packet.data[0];
       const args = packet.data.slice(1);
       if (event) {
         this.listeners(event).forEach((listener) => listener(...args));
       } else {
-        console.error(msg.data);
+        throw new Error(`[teckos-client@${this.url}] Got invalid event message: ${msg.data}`);
       }
     } else if (packet.type === PacketType.ACK && packet.id !== undefined) {
       // Call assigned function
@@ -120,7 +117,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
         this.acks.delete(packet.id);
       }
     } else {
-      console.error(`Invalid type: ${packet.type}`);
+      throw new Error(`[teckos-client@${this.url}] Got invalid message type: ${packet.type}`);
     }
   };
 
@@ -134,23 +131,23 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     if (this.options && this.options.reconnection && this.currentReconnectionAttempts > 0) {
       // Reset reconnection settings to default
       this.resetReconnectionState();
-      this.debug(`Reconnected to ${this.url}`);
+      d(`[${this.url}] Reconnected!`);
       this.listeners('reconnect').forEach((listener) => listener());
     } else {
-      this.debug(`Connected to ${this.url}`);
+      d(`[${this.url}] Connected!`);
       this.listeners('connect').forEach((listener) => listener());
     }
   };
 
   protected handleError = (error: Event) => {
     if (this.handlers && this.handlers.error) {
-      this.debug(`Got error from ${this.url}: ${error}`);
+      d(`[${this.url}] Got error from server: ${error}`);
       this.handlers.error.forEach((listener) => listener(error));
     }
   };
 
   protected handleClose = () => {
-    this.debug(`Disconnected from ${this.url}`);
+    d(`[${this.url}] Disconnected!`);
     this.listeners('disconnect').forEach((listener) => listener());
 
     if (this.options && this.options.reconnection) {
@@ -166,7 +163,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
         const timeout = Math.min(reconnectionDelayMax, this.currentReconnectDelay);
         // Increase reconnection delay
         this.currentReconnectDelay += this.currentReconnectDelay;
-        this.debug(`Try reconnecting in ${timeout}ms to ${this.url}...`);
+        d(`[${this.url}] Try reconnecting in ${timeout}ms to ${this.url}...`);
         setTimeout(() => {
           this.reconnect();
         }, timeout);
@@ -175,7 +172,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   };
 
   public close = () => {
-    this.debug(`Closing connection to ${this.url}`);
+    d(`[${this.url}] Closing connection (client-side)`);
     if (this.ws !== undefined) this.ws.close();
   };
 }

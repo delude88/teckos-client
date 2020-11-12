@@ -4,5 +4,4 @@ export interface TeckosConnectionOptions {
   reconnectionDelay?: number;
   reconnectionDelayMax?: number;
   timeout?: number;
-  verbose?: boolean;
 }

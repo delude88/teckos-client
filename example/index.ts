@@ -46,7 +46,11 @@ const connect = (token: string) => {
   });
 
   ws.on('hello', () => {
-    printToReceive("Received 'hello'");
+    printToReceive("Received 'hello' (was broadcasted by server to all)");
+  })
+
+  ws.on('notification', () => {
+    printToReceive("Received 'notification' (was broadcasted by server to group 'usergroup')");
   })
 
   ws.on('test', () => {

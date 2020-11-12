@@ -1,5 +1,8 @@
+import debug from 'debug';
 import TeckosClient from './TeckosClient';
 import { TeckosConnectionOptions } from './types';
+
+const d = debug('teckos:client');
 
 class TeckosClientWithJWT extends TeckosClient {
   protected readonly token: string;
@@ -16,12 +19,12 @@ class TeckosClientWithJWT extends TeckosClient {
     if (this.options && this.options.reconnection && this.currentReconnectionAttempts > 0) {
       this.resetReconnectionState();
       this.once('ready', () => {
-        this.debug(`Reconnected to ${this.url}`);
+        d(`[${this.url}] Reconnected!`);
         this.listeners('reconnect').forEach((listener) => listener());
       });
     } else {
       this.once('ready', () => {
-        this.debug(`Connected to ${this.url}`);
+        d(`[${this.url}] Connected!`);
         this.listeners('connect').forEach((listener) => listener());
       });
     }
