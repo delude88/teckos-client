@@ -4,12 +4,18 @@ import {
   Packet, PacketType, TeckosConnectionOptions, SocketEvent,
 } from './types';
 
+const DEFAULT_OPTIONS = {
+  reconnectionDelay: 250,
+  reconnectionDelayMax: 4000,
+  reconnectionAttempts: 100,
+};
+
 class TeckosClient extends SocketEventEmitter<SocketEvent> {
   protected readonly url: string;
 
-  protected reconnectDelay: number = 250;
+  protected currentReconnectDelay: number = DEFAULT_OPTIONS.reconnectionDelay;
 
-  protected reconnectionsAttemps: number = 0;
+  protected currentReconnectionAttempts: number = 0;
 
   protected acks: Map<number, (...args: any[]) => void> = new Map();
 
@@ -23,6 +29,9 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     super();
     this.options = options;
     this.url = url;
+    if (this.options && this.options.reconnectionDelay) {
+      this.currentReconnectDelay = this.options.reconnectionDelay;
+    }
   }
 
   protected attachHandler = () => {
@@ -35,6 +44,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   };
 
   public connect = () => {
+    this.debug(`Connecting to ${this.url}...`);
     this.ws = new WebSocket(this.url);
     this.attachHandler();
   };
@@ -117,7 +127,11 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   };
 
   protected handleOpen = () => {
-    if (this.reconnectionsAttemps > 0) {
+    if (this.options && this.options.reconnection && this.currentReconnectionAttempts > 0) {
+      // Reset reconnection settings to default
+      this.currentReconnectionAttempts = 0;
+      this.currentReconnectDelay = this.options.reconnectionDelay
+        || DEFAULT_OPTIONS.reconnectionDelay;
       this.debug(`Reconnected to ${this.url}`);
       this.listeners('reconnect').forEach((listener) => listener());
     } else {
@@ -137,15 +151,25 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     this.debug(`Disconnected from ${this.url}`);
     this.listeners('disconnect').forEach((listener) => listener());
 
-    // Try reconnect
-    this.reconnectDelay = (this.options && this.options.reconnectionDelay) || 250;
-    setTimeout(() => {
-      this.reconnectionsAttemps += 1;
-      this.reconnect();
-    }, Math.min(
-      (this.options && this.options.reconnectionDelayMax)
-      || 4000, this.reconnectDelay + this.reconnectDelay,
-    ));
+    if (this.options && this.options.reconnection) {
+      // Try reconnect
+      const reconnectionAttempts = this.options.reconnectionAttempts
+        || DEFAULT_OPTIONS.reconnectionAttempts;
+      const reconnectionDelayMax = this.options.reconnectionDelayMax
+        || DEFAULT_OPTIONS.reconnectionDelayMax;
+      // Increase count of reconnections
+      this.currentReconnectionAttempts += this.currentReconnectionAttempts;
+      // Is the count still under the max value?
+      if (this.currentReconnectionAttempts <= reconnectionAttempts) {
+        const timeout = Math.min(reconnectionDelayMax, this.currentReconnectDelay);
+        // Increase reconnection delay
+        this.currentReconnectDelay += this.currentReconnectDelay;
+        this.debug(`Try reconnecting in ${timeout}ms to ${this.url}...`);
+        setTimeout(() => {
+          this.reconnect();
+        }, timeout);
+      }
+    }
   };
 
   public close = () => {
