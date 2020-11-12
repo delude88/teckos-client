@@ -1,12 +1,13 @@
 import TeckosClient from './TeckosClient';
+import { TeckosConnectionOptions } from './types';
 
 class TeckosClientWithJWT extends TeckosClient {
   protected readonly token: string;
 
   protected readonly initialData: any;
 
-  constructor(url: string, token: string, initialData?: any) {
-    super(url);
+  constructor(url: string, options: TeckosConnectionOptions, token: string, initialData?: any) {
+    super(url, options);
     this.token = token;
     this.initialData = initialData;
   }
