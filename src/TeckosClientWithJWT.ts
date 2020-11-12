@@ -12,13 +12,18 @@ class TeckosClientWithJWT extends TeckosClient {
   }
 
   protected handleOpen = () => {
-    this.once('ready', () => {
-      if (this.reconnectionsAttemps > 0) {
+    if (this.options && this.options.reconnection && this.currentReconnectionAttempts > 0) {
+      this.resetReconnectionState();
+      this.once('ready', () => {
+        this.debug(`Reconnected to ${this.url}`);
         this.listeners('reconnect').forEach((listener) => listener());
-      } else {
+      });
+    } else {
+      this.once('ready', () => {
+        this.debug(`Connected to ${this.url}`);
         this.listeners('connect').forEach((listener) => listener());
-      }
-    });
+      });
+    }
     this.emit('token', {
       token: this.token,
       ...this.initialData,

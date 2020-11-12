@@ -29,9 +29,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     super();
     this.options = options;
     this.url = url;
-    if (this.options && this.options.reconnectionDelay) {
-      this.currentReconnectDelay = this.options.reconnectionDelay;
-    }
+    this.resetReconnectionState();
   }
 
   protected attachHandler = () => {
@@ -126,12 +124,16 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     }
   };
 
+  protected resetReconnectionState = () => {
+    this.currentReconnectionAttempts = 0;
+    this.currentReconnectDelay = this.options && this.options.reconnectionDelay
+      ? this.options.reconnectionDelay : DEFAULT_OPTIONS.reconnectionDelay;
+  };
+
   protected handleOpen = () => {
     if (this.options && this.options.reconnection && this.currentReconnectionAttempts > 0) {
       // Reset reconnection settings to default
-      this.currentReconnectionAttempts = 0;
-      this.currentReconnectDelay = this.options.reconnectionDelay
-        || DEFAULT_OPTIONS.reconnectionDelay;
+      this.resetReconnectionState();
       this.debug(`Reconnected to ${this.url}`);
       this.listeners('reconnect').forEach((listener) => listener());
     } else {
