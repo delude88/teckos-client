@@ -1,4 +1,5 @@
-import {TeckosClientWithJWT} from "./../src"
+
+import {TeckosClient} from "../lib";
 
 const URL = "ws://localhost:4000";
 
@@ -12,32 +13,41 @@ const printToReceive = (text: string) => {
   receivingRef.value += text + "\n";
 }
 
+const sendExampleMessages = (ws) => {
+  printToSent("Sending 'no-args'");
+  ws.emit('no-args');
+
+  printToSent("Sending 'hello' with payload");
+  ws.emit('hello', {another: 'world'}, ['hello', 'world']);
+
+  printToSent("Sending 'hello' with payload and callback");
+  ws.emit('work', {some: 'data'}, (result: string) => {
+    printToReceive("Got result from callback: " + result);
+  });
+
+  printToSent("Sending 'personal'");
+  ws.emit('personal');
+
+  printToSent("Now sleeping for 5s...");
+
+  setTimeout(() => sendExampleMessages(ws), 5000);
+}
+
 const connect = (token: string) => {
-  const ws = new TeckosClientWithJWT(URL, token, {bla: 'blubb'});
+  const ws = new TeckosClient(URL, {
+    verbose: true,
+    reconnection: true
+  });
 
-  const sendExampleMessages = () => {
-    printToSent("Sending 'no-args'");
-    ws.emit('no-args');
-
-    printToSent("Sending 'hello' with payload");
-    ws.emit('hello', {another: 'world'}, ['hello', 'world']);
-
-    printToSent("Sending 'hello' with payload and callback");
-    ws.emit('work', {some: 'data'}, (result: string) => {
-      receivingRef.value += "Got result from callback:" + result;
-    });
-
-    printToSent("Sending 'personal'");
-    ws.emit('personal');
-
-    printToSent("Now sleeping for 5s...");
-    setTimeout(() => sendExampleMessages(), 5000);
-  }
 
   ws.on('connect', () => {
     printToReceive("Connected!");
-    sendExampleMessages();
+    sendExampleMessages(ws);
   });
+
+  ws.on('hello', () => {
+    printToReceive("Received 'hello'");
+  })
 
   ws.on('test', () => {
     printToReceive("Received 'test'");
@@ -49,8 +59,6 @@ const connect = (token: string) => {
 
   ws.on('disconnect', () => {
     printToReceive("Disconnected!");
-    printToReceive("Reconnecting...");
-    setTimeout(() => connect(token), 1000);
   });
 
   ws.connect();

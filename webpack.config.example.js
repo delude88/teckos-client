@@ -2,10 +2,13 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+		devServer: {
+				contentBase: './public',
+		},
 		entry: './example/index.ts',
 		plugins: [
 				new CleanWebpackPlugin({
-						cleanAfterEveryBuildPatterns: ['dist']
+						cleanAfterEveryBuildPatterns: ['public']
 				}),
 				new HtmlWebpackPlugin({
 						template: 'example/index.html'
