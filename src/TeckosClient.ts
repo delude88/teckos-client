@@ -101,7 +101,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   };
 
   protected handleMessage = (msg: WebSocket.MessageEvent) => {
-    const packet = typeof msg.data === 'string' ? JSON.parse(msg.data) : decodePacket(msg.data);
+    const packet = typeof msg.data === 'string' ? JSON.parse(msg.data) : decodePacket(msg.data as ArrayBuffer);
 
     d(`[${this.url}] Got packet: ${JSON.stringify(packet)}`);
     if (packet.type === PacketType.EVENT) {
