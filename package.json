@@ -1,6 +1,6 @@
 {
   "name": "teckos-client",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "uWebsocket.js based client component supporting async callbacks",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -8,12 +8,15 @@
     "lib/**/*"
   ],
   "scripts": {
-    "dev": "webpack serve --config webpack.config.example.js",
+    "dev:web": "webpack serve --config webpack.config.example.web.js",
+    "dev:node": "DEBUG=example* nodemon --watch './src/**/*.ts,./example/node/**/*.ts' --exec 'ts-node' --project tsconfig.example.node.json example/node/index.ts",
     "build:lib": "tsc --p tsconfig.json",
-    "build:example": "webpack --config webpack.config.example.js",
+    "build:example:web": "webpack --config webpack.config.example.web.js",
+    "build:example:node": "tsc --p tsconfig.example.node.json",
+    "build:example": "npm run build:example:web && npm run build:example:node",
     "build": "npm run build:lib",
-    "start": "npm run build:example && node ./dist/example/index.js",
-    "lint": "npx eslint ./src --ext .js,.ts",
+    "start:node": "npm run build:example:node && node ./dist/example/node/index.js",
+    "lint": "npx eslint ./src --ext .js,.ts --fix",
     "prepare": "npm run build",
     "prepublishOnly": "npm run lint",
     "preversion": "npm run lint",
@@ -38,6 +41,7 @@
   "homepage": "https://github.com/delude88/teckos-client#readme",
   "devDependencies": {
     "@types/debug": "^4.1.5",
+    "@types/ws": "^7.4.0",
     "@typescript-eslint/eslint-plugin": "^4.7.0",
     "@typescript-eslint/parser": "^4.7.0",
     "clean-webpack-plugin": "^3.0.0",
@@ -55,6 +59,8 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "debug": "^4.2.0"
+    "debug": "^4.2.0",
+    "isomorphic-ws": "^4.0.1",
+    "ws": "^7.4.0"
   }
 }

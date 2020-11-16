@@ -4,6 +4,8 @@ import { decodePacket, encodePacket } from './util/Converter';
 import {
   Packet, PacketType, TeckosConnectionOptions, SocketEvent,
 } from './types';
+// eslint-disable-next-line
+import WebSocket = require('isomorphic-ws');
 
 const d = debug('teckos:client');
 
@@ -46,6 +48,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
 
   public connect = () => {
     d(`Connecting to ${this.url}...`);
+
     this.ws = new WebSocket(this.url);
     this.attachHandler();
   };
@@ -97,7 +100,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     return false;
   };
 
-  protected handleMessage = (msg: MessageEvent) => {
+  protected handleMessage = (msg: WebSocket.MessageEvent) => {
     const packet = typeof msg.data === 'string' ? JSON.parse(msg.data) : decodePacket(msg.data);
 
     d(`[${this.url}] Got packet: ${JSON.stringify(packet)}`);
@@ -139,7 +142,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     }
   };
 
-  protected handleError = (error: Event) => {
+  protected handleError = (error: WebSocket.ErrorEvent) => {
     if (this.handlers && this.handlers.error) {
       d(`[${this.url}] Got error from server: ${error}`);
       this.handlers.error.forEach((listener) => listener(error));

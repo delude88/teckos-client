@@ -13,7 +13,7 @@
     ]
   },
   "include": [
-    "example/**/*.ts",
+    "example/web/**/*.ts",
     "src/**/*.ts"
   ],
   "exclude": [

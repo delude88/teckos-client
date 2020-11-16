@@ -1,5 +1,4 @@
-
-import {TeckosClient} from "../lib";
+import {TeckosClient} from "../../lib";
 
 const URL = "ws://localhost:4000";
 
@@ -35,7 +34,6 @@ const sendExampleMessages = (ws) => {
 
 const connect = (token: string) => {
   const ws = new TeckosClient(URL, {
-    verbose: true,
     reconnection: true
   });
 

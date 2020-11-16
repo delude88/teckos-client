@@ -5,13 +5,13 @@ module.exports = {
 		devServer: {
 				contentBase: './public',
 		},
-		entry: './example/index.ts',
+		entry: './example/web/index.ts',
 		plugins: [
 				new CleanWebpackPlugin({
 						cleanAfterEveryBuildPatterns: ['public']
 				}),
 				new HtmlWebpackPlugin({
-						template: 'example/index.html'
+						template: 'example/web/index.html'
 				}),
 		],
 		output: {
@@ -28,7 +28,7 @@ module.exports = {
 								exclude: [/node_modules/],
 								loader: "ts-loader",
 								options: {
-										configFile: "tsconfig.example.json"
+										configFile: "tsconfig.example.web.json"
 								}
 						}
 				]
