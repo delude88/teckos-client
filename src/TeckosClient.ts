@@ -46,10 +46,18 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     }
   };
 
+  public get webSocket() {
+    return this.ws;
+  }
+
   public connect = () => {
     d(`Connecting to ${this.url}...`);
 
     this.ws = new WebSocket(this.url);
+    this.ws.on('ping', (data) => {
+      d('Respond to ping with pong');
+      if (this.ws) this.ws.pong(data);
+    });
     this.attachHandler();
   };
 
@@ -156,9 +164,9 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     if (this.options && this.options.reconnection) {
       // Try reconnect
       const reconnectionAttempts = this.options.reconnectionAttempts
-        || DEFAULT_OPTIONS.reconnectionAttempts;
+                || DEFAULT_OPTIONS.reconnectionAttempts;
       const reconnectionDelayMax = this.options.reconnectionDelayMax
-        || DEFAULT_OPTIONS.reconnectionDelayMax;
+                || DEFAULT_OPTIONS.reconnectionDelayMax;
       // Increase count of reconnections
       this.currentReconnectionAttempts += this.currentReconnectionAttempts;
       // Is the count still under the max value?

@@ -67,10 +67,6 @@ const connect = async () => {
     printToReceive("Disconnected!");
   });
 
-  ws.on('ping', () => {
-    printToReceive("Received 'ping'");
-  })
-
   ws.connect();
 };
 
