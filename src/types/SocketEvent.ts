@@ -1,6 +1,6 @@
 interface BaseSocketEvents {
-  reconnect: 'reconnect',
-  disconnect: 'disconnect',
+  reconnect: 'reconnect';
+  disconnect: 'disconnect';
 }
 
 export type SocketEvent = BaseSocketEvents[keyof BaseSocketEvents] | string;

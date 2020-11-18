@@ -106,3 +106,5 @@ dist
 .idea
 public
 lib
+.DS_Store
+node_modules

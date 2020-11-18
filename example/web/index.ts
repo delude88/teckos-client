@@ -1,4 +1,4 @@
-import {TeckosClient} from "../../lib";
+import {TeckosClient} from "../..";
 
 const URL = "ws://localhost:4000";
 
@@ -37,7 +37,6 @@ const connect = (token: string) => {
     reconnection: true
   });
 
-
   ws.on('connect', () => {
     printToReceive("Connected!");
     sendExampleMessages(ws);
@@ -63,6 +62,7 @@ const connect = (token: string) => {
     printToReceive("Disconnected!");
   });
 
+  console.log("Connecting...");
   ws.connect();
 };
 

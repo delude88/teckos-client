@@ -4,6 +4,4 @@ export * from './SocketEvent';
 export * from './Packet';
 export * from './TeckosConnectionOptions';
 
-export {
-  PacketType,
-};
+export { PacketType };

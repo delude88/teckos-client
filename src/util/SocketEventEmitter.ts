@@ -2,7 +2,7 @@ class SocketEventEmitter<T extends string> {
   protected maxListeners: number = 50;
 
   protected handlers: {
-    [event: string]: ((...args: any[]) => void)[]
+    [event: string]: ((...args: any[]) => void)[];
   } = {};
 
   public addListener = (event: T, listener: (...args: any[]) => void): this => {
@@ -27,17 +27,20 @@ class SocketEventEmitter<T extends string> {
     return this;
   };
 
-  public removeListener = (event: T, listener: (...args: any[]) => void): this => {
+  public removeListener = (
+    event: T,
+    listener: (...args: any[]) => void
+  ): this => {
     if (this.handlers[event]) {
-      this.handlers[event] = this.handlers[event].filter((handler) => handler !== listener);
+      this.handlers[event] = this.handlers[event].filter(
+        handler => handler !== listener
+      );
     }
     return this;
   };
 
-  public off = (
-    event: T,
-    listener: (...args: any[]) => void,
-  ): this => this.removeListener(event, listener);
+  public off = (event: T, listener: (...args: any[]) => void): this =>
+    this.removeListener(event, listener);
 
   public removeAllListeners = (event?: T): this => {
     if (event) {
@@ -71,7 +74,10 @@ class SocketEventEmitter<T extends string> {
     return 0;
   };
 
-  public prependListener = (event: T, listener: (...args: any[]) => void): this => {
+  public prependListener = (
+    event: T,
+    listener: (...args: any[]) => void
+  ): this => {
     if (Object.keys(this.handlers).length === this.maxListeners) {
       throw new Error('Max listeners reached');
     }
@@ -80,7 +86,10 @@ class SocketEventEmitter<T extends string> {
     return this;
   };
 
-  public prependOnceListener = (event: T, listener: (...args: any[]) => void): this => {
+  public prependOnceListener = (
+    event: T,
+    listener: (...args: any[]) => void
+  ): this => {
     if (Object.keys(this.handlers).length === this.maxListeners) {
       throw new Error('Max listeners reached');
     }
@@ -93,17 +102,15 @@ class SocketEventEmitter<T extends string> {
     return this;
   };
 
-  public eventNames = (): (T)[] => (Object.keys(this.handlers) as T[]);
+  public eventNames = (): T[] => Object.keys(this.handlers) as T[];
 
-  public on = (
-    event: T,
-    listener: (...args: any[]) => void,
-  ): this => this.addListener(event, listener);
+  public on = (event: T, listener: (...args: any[]) => void): this =>
+    this.addListener(event, listener);
 
   public emit = (event: T, ...args: any[]): boolean => {
     const listeners = this.listeners(event);
     if (listeners.length > 0) {
-      listeners.forEach((listener) => listener(args));
+      listeners.forEach(listener => listener(args));
       return true;
     }
     return false;

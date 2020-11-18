@@ -1,11 +1,13 @@
 import debug from 'debug';
+import WebSocket from 'isomorphic-ws';
 import SocketEventEmitter from './util/SocketEventEmitter';
 import { decodePacket, encodePacket } from './util/Converter';
 import {
-  Packet, PacketType, TeckosConnectionOptions, SocketEvent,
+  Packet,
+  PacketType,
+  TeckosConnectionOptions,
+  SocketEvent,
 } from './types';
-// eslint-disable-next-line
-import WebSocket = require('isomorphic-ws');
 
 const d = debug('teckos:client');
 
@@ -54,10 +56,13 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     d(`Connecting to ${this.url}...`);
 
     this.ws = new WebSocket(this.url);
-    this.ws.on('ping', (data) => {
-      d('Respond to ping with pong');
-      if (this.ws) this.ws.pong(data);
-    });
+    /* if (this.ws.on) {
+      // Only on node environments
+      this.ws.on('ping', (data) => {
+        d('Respond to ping with pong');
+        if (this.ws) this.ws.pong(data);
+      });
+    } */
     this.attachHandler();
   };
 
@@ -109,16 +114,21 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
   };
 
   protected handleMessage = (msg: WebSocket.MessageEvent) => {
-    const packet = typeof msg.data === 'string' ? JSON.parse(msg.data) : decodePacket(msg.data as ArrayBuffer);
+    const packet =
+      typeof msg.data === 'string'
+        ? JSON.parse(msg.data)
+        : decodePacket(msg.data as ArrayBuffer);
 
     d(`[${this.url}] Got packet: ${JSON.stringify(packet)}`);
     if (packet.type === PacketType.EVENT) {
       const event = packet.data[0];
       const args = packet.data.slice(1);
       if (event) {
-        this.listeners(event).forEach((listener) => listener(...args));
+        this.listeners(event).forEach(listener => listener(...args));
       } else {
-        throw new Error(`[teckos-client@${this.url}] Got invalid event message: ${msg.data}`);
+        throw new Error(
+          `[teckos-client@${this.url}] Got invalid event message: ${msg.data}`
+        );
       }
     } else if (packet.type === PacketType.ACK && packet.id !== undefined) {
       // Call assigned function
@@ -128,50 +138,63 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
         this.acks.delete(packet.id);
       }
     } else {
-      throw new Error(`[teckos-client@${this.url}] Got invalid message type: ${packet.type}`);
+      throw new Error(
+        `[teckos-client@${this.url}] Got invalid message type: ${packet.type}`
+      );
     }
   };
 
   protected resetReconnectionState = () => {
     this.currentReconnectionAttempts = 0;
-    this.currentReconnectDelay = this.options && this.options.reconnectionDelay
-      ? this.options.reconnectionDelay : DEFAULT_OPTIONS.reconnectionDelay;
+    this.currentReconnectDelay =
+      this.options && this.options.reconnectionDelay
+        ? this.options.reconnectionDelay
+        : DEFAULT_OPTIONS.reconnectionDelay;
   };
 
   protected handleOpen = () => {
-    if (this.options && this.options.reconnection && this.currentReconnectionAttempts > 0) {
+    if (
+      this.options &&
+      this.options.reconnection &&
+      this.currentReconnectionAttempts > 0
+    ) {
       // Reset reconnection settings to default
       this.resetReconnectionState();
       d(`[${this.url}] Reconnected!`);
-      this.listeners('reconnect').forEach((listener) => listener());
+      this.listeners('reconnect').forEach(listener => listener());
     } else {
       d(`[${this.url}] Connected!`);
-      this.listeners('connect').forEach((listener) => listener());
+      this.listeners('connect').forEach(listener => listener());
     }
   };
 
   protected handleError = (error: WebSocket.ErrorEvent) => {
     if (this.handlers && this.handlers.error) {
       d(`[${this.url}] Got error from server: ${error}`);
-      this.handlers.error.forEach((listener) => listener(error));
+      this.handlers.error.forEach(listener => listener(error));
     }
   };
 
   protected handleClose = () => {
     d(`[${this.url}] Disconnected!`);
-    this.listeners('disconnect').forEach((listener) => listener());
+    this.listeners('disconnect').forEach(listener => listener());
 
     if (this.options && this.options.reconnection) {
       // Try reconnect
-      const reconnectionAttempts = this.options.reconnectionAttempts
-                || DEFAULT_OPTIONS.reconnectionAttempts;
-      const reconnectionDelayMax = this.options.reconnectionDelayMax
-                || DEFAULT_OPTIONS.reconnectionDelayMax;
+      const reconnectionAttempts =
+        this.options.reconnectionAttempts ||
+        DEFAULT_OPTIONS.reconnectionAttempts;
+      const reconnectionDelayMax =
+        this.options.reconnectionDelayMax ||
+        DEFAULT_OPTIONS.reconnectionDelayMax;
       // Increase count of reconnections
       this.currentReconnectionAttempts += this.currentReconnectionAttempts;
       // Is the count still under the max value?
       if (this.currentReconnectionAttempts <= reconnectionAttempts) {
-        const timeout = Math.min(reconnectionDelayMax, this.currentReconnectDelay);
+        const timeout = Math.min(
+          reconnectionDelayMax,
+          this.currentReconnectDelay
+        );
         // Increase reconnection delay
         this.currentReconnectDelay += this.currentReconnectDelay;
         d(`[${this.url}] Try reconnecting in ${timeout}ms to ${this.url}...`);
