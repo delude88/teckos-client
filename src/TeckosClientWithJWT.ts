@@ -2,7 +2,7 @@ import debug from 'debug';
 import WebSocket from 'isomorphic-ws';
 import TeckosClient from './TeckosClient';
 import { OptionalOptions } from './types/Options';
-import { ConnectionState } from './types/ConnectionState';
+import { ConnectionState } from './types';
 
 const d = debug('teckos:client');
 
