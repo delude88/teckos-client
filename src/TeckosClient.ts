@@ -1,15 +1,16 @@
 import debug from 'debug';
 import WebSocket from 'isomorphic-ws';
-import SocketEventEmitter from './util/SocketEventEmitter';
 import { decodePacket, encodePacket } from './util/Converter';
 import {
+  ConnectionState,
+  OptionalOptions,
+  Options,
   Packet,
   PacketType,
   SocketEvent,
-  OptionalOptions,
-  Options,
-  ConnectionState,
 } from './types';
+import ITeckosClient from './ITeckosClient';
+import SocketEventEmitter from './util/SocketEventEmitter';
 
 const d = debug('teckos:client');
 
@@ -22,12 +23,14 @@ const DEFAULT_OPTIONS: Options = {
   timeout: 5000,
 };
 
-class TeckosClient extends SocketEventEmitter<SocketEvent> {
+class TeckosClient
+  extends SocketEventEmitter<SocketEvent>
+  implements ITeckosClient {
   protected readonly url: string;
 
   protected readonly options: Options;
 
-  protected ws: WebSocket | undefined;
+  ws: WebSocket | undefined;
 
   protected currentReconnectDelay: number;
 
@@ -104,11 +107,11 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     return this.getConnectionState();
   }
 
-  public get connected(): boolean {
+  get connected(): boolean {
     return this.getConnectionState() === ConnectionState.CONNECTED;
   }
 
-  public get disconnected(): boolean {
+  get disconnected(): boolean {
     return this.getConnectionState() === ConnectionState.DISCONNECTED;
   }
 
@@ -137,8 +140,8 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> {
     });
   };
 
-  protected sendPackage = (packet: Packet): boolean => {
-    if (this.ws !== undefined && this.connected) {
+  public sendPackage = (packet: Packet): boolean => {
+    if (this.ws !== undefined && this.ws.readyState === WebSocket.OPEN) {
       const buffer = encodePacket(packet);
       d(`[${this.url}] Send packet: ${JSON.stringify(packet)}`);
       this.ws.send(buffer);

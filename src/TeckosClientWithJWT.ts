@@ -1,8 +1,7 @@
 import debug from 'debug';
 import WebSocket from 'isomorphic-ws';
 import TeckosClient from './TeckosClient';
-import { OptionalOptions } from './types/Options';
-import { ConnectionState } from './types';
+import { OptionalOptions, ConnectionState } from './types';
 
 const d = debug('teckos:client');
 
@@ -32,7 +31,6 @@ class TeckosClientWithJWT extends TeckosClient {
             return ConnectionState.CONNECTED;
           }
           return ConnectionState.CONNECTING;
-
         case WebSocket.CONNECTING:
           return ConnectionState.CONNECTING;
         case WebSocket.CLOSING:
@@ -44,24 +42,27 @@ class TeckosClientWithJWT extends TeckosClient {
     return ConnectionState.DISCONNECTED;
   }
 
-  protected handleOpen = () => {
+  protected handleReadyEvent = () => {
+    d(`[${this.url}] Connected!`);
+    this.receivedReady = false;
     if (this.currentReconnectionAttempts > 0) {
+      d(`[${this.url}] Reconnected!`);
+      this.listeners('reconnect').forEach((listener) => listener());
       // Reset reconnection settings to default
       this.currentReconnectDelay = this.options.reconnectionDelay;
       this.currentReconnectionAttempts = 0;
-      // Inform listeners about reconnect
-      this.once('ready', () => {
-        d(`[${this.url}] Reconnected!`);
-        this.listeners('reconnect').forEach((listener) => listener());
-      });
     }
-    // Inform listeners about connect in general
+    this.listeners('connect').forEach((listener) => listener());
+  };
+
+  handleOpen = () => {
     this.receivedReady = false;
-    this.once('ready', () => {
+    this.on('ready', () => {
       this.receivedReady = true;
       d(`[${this.url}] Connected!`);
       this.listeners('connect').forEach((listener) => listener());
     });
+    d('Connection opened, sending token now');
     this.emit('token', {
       token: this.token,
       ...this.initialData,

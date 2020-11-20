@@ -1,5 +1,6 @@
-import {TeckosClient} from "../..";
+
 import debug from "debug";
+import {TeckosClientWithJWT, ITeckosClient} from "../../src";
 
 const d = debug("example");
 
@@ -7,9 +8,9 @@ const printToSent = d.extend("sent");
 const printToReceive = d.extend("received");
 
 
-const URL = "ws://localhost:4000";
+const URL = "ws://imac.fritz.box:4000";
 
-const sendExampleMessages = (ws: TeckosClient) => {
+const sendExampleMessages = (ws: ITeckosClient) => {
     if (ws.disconnected) {
         return;
     }
@@ -33,11 +34,11 @@ const sendExampleMessages = (ws: TeckosClient) => {
     setTimeout(() => sendExampleMessages(ws), 5000);
 }
 
-const connect = async () => {
-    const ws = new TeckosClient(URL, {
+const connect = async (token: string) => {
+    const ws: ITeckosClient = new TeckosClientWithJWT(URL, {
         reconnection: true,
         reconnectionAttempts: 5
-    });
+    }, token);
 
     ws.on('connect', () => {
         printToReceive("Connected!");
@@ -82,4 +83,4 @@ const connect = async () => {
     ws.connect();
 };
 
-connect();
+connect("secret123");

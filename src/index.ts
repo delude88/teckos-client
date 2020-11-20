@@ -1,10 +1,11 @@
 import TeckosClientWithJWT from './TeckosClientWithJWT';
 import TeckosClient from './TeckosClient';
+import ITeckosClient from './ITeckosClient';
 import * as types from './types';
 
 /**
  * Expose all types
  */
-export { types };
+export type { ITeckosClient };
 
-export { TeckosClient, TeckosClientWithJWT };
+export { types, TeckosClient, TeckosClientWithJWT };
