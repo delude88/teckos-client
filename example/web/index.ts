@@ -12,7 +12,7 @@ const printToReceive = (text: string) => {
   receivingRef.value += text + "\n";
 }
 
-const sendExampleMessages = (ws) => {
+const sendExampleMessages = (ws: TeckosClient) => {
   printToSent("Sending 'no-args'");
   ws.emit('no-args');
 
@@ -32,7 +32,7 @@ const sendExampleMessages = (ws) => {
   setTimeout(() => sendExampleMessages(ws), 5000);
 }
 
-const connect = (token: string) => {
+const connect = () => {
   const ws = new TeckosClient(URL, {
     reconnection: true
   });
@@ -54,7 +54,7 @@ const connect = (token: string) => {
     printToReceive("Received 'test'");
   })
 
-  ws.on('error', (error) => {
+  ws.on('error', (error: Error) => {
     printToReceive("Received 'error': " + error);
   });
 
@@ -68,5 +68,5 @@ const connect = (token: string) => {
 
 
 document.addEventListener("DOMContentLoaded", function(){
-  connect("mytoken");
+  connect();
 });

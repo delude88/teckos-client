@@ -34,19 +34,22 @@ const sendExampleMessages = (ws: TeckosClient) => {
 }
 
 const connect = async () => {
-    const ws = new TeckosClient(URL, {});
+    const ws = new TeckosClient(URL, {
+        reconnection: true,
+        reconnectionAttempts: 5
+    });
 
     ws.on('connect', () => {
         printToReceive("Connected!");
         sendExampleMessages(ws);
     });
 
-    ws.on('hello', (firstName, lastName) => {
+    ws.on('hello', (firstName: string, lastName: string) => {
         printToReceive("Received 'hello' with payload (to all):");
         printToReceive(firstName, lastName);
     })
 
-    ws.on('notification', (firstName, lastName) => {
+    ws.on('notification', (firstName: string, lastName: string) => {
         printToReceive("Received 'notification' with payload (to group 'usergroup'):");
         printToReceive(firstName, lastName);
     })
@@ -55,9 +58,21 @@ const connect = async () => {
         printToReceive("Received 'test'");
     })
 
-    ws.on('error', (error) => {
+    ws.on('error', (error: Error) => {
         printToReceive("Received 'error': ");
         console.error(error);
+    });
+
+    ws.on('reconnect_attempt', () => {
+        printToReceive("Try to reconnect ...");
+    });
+
+    ws.on('reconnect_error', () => {
+        printToReceive("Reconnect attempt failed!");
+    });
+
+    ws.on('reconnect_failed', () => {
+        printToReceive("Unable to reconnect!");
     });
 
     ws.on('disconnect', () => {

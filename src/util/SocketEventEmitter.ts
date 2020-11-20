@@ -33,7 +33,7 @@ class SocketEventEmitter<T extends string> {
   ): this => {
     if (this.handlers[event]) {
       this.handlers[event] = this.handlers[event].filter(
-        handler => handler !== listener
+        (handler) => handler !== listener
       );
     }
     return this;
@@ -110,7 +110,7 @@ class SocketEventEmitter<T extends string> {
   public emit = (event: T, ...args: any[]): boolean => {
     const listeners = this.listeners(event);
     if (listeners.length > 0) {
-      listeners.forEach(listener => listener(args));
+      listeners.forEach((listener) => listener(args));
       return true;
     }
     return false;
