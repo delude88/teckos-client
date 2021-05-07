@@ -1,5 +1,5 @@
 enum PacketType {
-  EVENT,
-  ACK,
+    EVENT,
+    ACK,
 }
-export default PacketType;
+export default PacketType
