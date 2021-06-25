@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "esnext",
+      "dom"
+    ],
     "target": "es5",
     "importHelpers": true,
     "declaration": true,
@@ -16,7 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "outDir": "lib",
     "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
+    "allowJs": true
   },
   "include": [
     "src/**/*"

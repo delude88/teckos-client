@@ -1,4 +1,3 @@
-// @ts-ignore
 import WebSocket from 'isomorphic-ws'
 import { ConnectionState, Packet, SocketEvent } from './types'
 import SocketEventEmitter from './util/SocketEventEmitter'
