@@ -50,13 +50,9 @@ class TeckosClientWithJWT extends TeckosClient {
         this.listeners('connect').forEach((listener) => listener())
     }
 
-    handleOpen = () => {
+    protected handleOpen = () => {
         this.receivedReady = false
-        this.on('ready', () => {
-            this.receivedReady = true
-            if (this.options.debug) d(`[${this.url}] Connected!`)
-            this.listeners('connect').forEach((listener) => listener())
-        })
+        this.once('ready', this.handleReadyEvent)
         if (this.options.debug) d('Connection opened, sending token now')
         this.emit('token', {
             token: this.token,

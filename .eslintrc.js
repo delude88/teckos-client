@@ -2,7 +2,6 @@ module.exports = {
     "extends": [
         'airbnb-typescript/base',
         "react-app",
-        "prettier/@typescript-eslint",
         "plugin:prettier/recommended"
     ],
     "settings": {
