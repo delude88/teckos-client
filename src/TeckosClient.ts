@@ -249,7 +249,10 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
 
     public close = () => {
         if (this.options.debug) d(`[${this.url}] Closing connection (client-side)`)
-        if (this.ws !== undefined) this.ws.close()
+        if (this.ws !== undefined) {
+            this.ws.onclose = () => {}
+            this.ws.close()
+        }
     }
 
     public disconnect = () => {
