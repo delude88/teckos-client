@@ -99,7 +99,9 @@ class SocketEventEmitter<T extends string> {
     public emit = (event: T, ...args: any[]): boolean => {
         const listeners = this.listeners(event)
         if (listeners.length > 0) {
-            listeners.forEach((listener) => listener(args))
+            listeners.forEach((listener) => {
+                if (listener) listener(args)
+            })
             return true
         }
         return false

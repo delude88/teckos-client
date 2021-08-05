@@ -206,10 +206,14 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
         if (this.currentReconnectionAttempts > 0) {
             if (this.options.debug)
                 d(`[${this.url}] Reconnect #${this.currentReconnectionAttempts} failed!`)
-            this.listeners('reconnect_error').forEach((listener) => listener())
+            this.listeners('reconnect_error').forEach((listener) => {
+                if (listener) listener()
+            })
         } else {
             if (this.options.debug) d(`[${this.url}] Disconnected!`)
-            this.listeners('disconnect').forEach((listener) => listener())
+            this.listeners('disconnect').forEach((listener) => {
+                if (listener) listener()
+            })
         }
 
         if (this.options.reconnection) {
