@@ -9,6 +9,9 @@ class SocketEventEmitter<T extends string> {
         if (Object.keys(this.handlers).length === this.maxListeners) {
             throw new Error('Max listeners reached')
         }
+        if (typeof listener !== "function") {
+            throw new Error("The given listener is not a function")
+        }
         this.handlers[event] = this.handlers[event] || []
         this.handlers[event].push(listener)
         return this
@@ -17,6 +20,9 @@ class SocketEventEmitter<T extends string> {
     public once = (event: T, listener: (...args: any[]) => void): this => {
         if (Object.keys(this.handlers).length === this.maxListeners) {
             throw new Error('Max listeners reached')
+        }
+        if (typeof listener !== "function") {
+            throw new Error("The given listener is not a function")
         }
         this.handlers[event] = this.handlers[event] || []
         const onceWrapper = () => {
