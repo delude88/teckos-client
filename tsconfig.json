@@ -19,7 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "outDir": "lib",
     "forceConsistentCasingInFileNames": true,
-    "allowJs": true
+    "allowJs": false
   },
   "include": [
     "src/**/*"

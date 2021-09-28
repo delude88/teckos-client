@@ -4,4 +4,4 @@ enum ConnectionState {
     CONNECTED = 'connected',
     DISCONNECTING = 'disconnecting',
 }
-export default ConnectionState
+export { ConnectionState }

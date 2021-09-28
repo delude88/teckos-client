@@ -1,6 +1,6 @@
 import WebSocket from 'isomorphic-ws'
 import { ConnectionState, Packet, SocketEvent } from './types'
-import SocketEventEmitter from './util/SocketEventEmitter'
+import { SocketEventEmitter } from './util/SocketEventEmitter'
 
 interface ITeckosClient extends SocketEventEmitter<SocketEvent> {
     ws: WebSocket | undefined
@@ -15,4 +15,5 @@ interface ITeckosClient extends SocketEventEmitter<SocketEvent> {
     connect: () => void
     disconnect: () => void
 }
-export default ITeckosClient
+
+export type { ITeckosClient }
