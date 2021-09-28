@@ -1,6 +1,6 @@
 
 import debug from "debug";
-import {TeckosClientWithJWT, ITeckosClient} from "../../src";
+import {ITeckosClient, TeckosClientWithJWT} from "../../dist";
 
 const d = debug("example");
 

@@ -1,6 +1,6 @@
 import debug from 'debug'
 import WebSocket from 'isomorphic-ws'
-import TeckosClient from './TeckosClient'
+import { TeckosClient } from './TeckosClient'
 import { OptionalOptions, ConnectionState } from './types'
 
 const d = debug('teckos:client')
@@ -10,12 +10,17 @@ class TeckosClientWithJWT extends TeckosClient {
 
     protected readonly initialData: any
 
-    protected receivedReady: boolean = false
+    protected receivedReady = false
 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     constructor(url: string, options: OptionalOptions, token: string, initialData?: any) {
         super(url, options)
         this.token = token
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.initialData = initialData
+        this.on('disconnect', () => {
+            this.receivedReady = false
+        })
     }
 
     protected getConnectionState(): ConnectionState {
@@ -37,9 +42,9 @@ class TeckosClientWithJWT extends TeckosClient {
         return ConnectionState.DISCONNECTED
     }
 
-    protected handleReadyEvent = () => {
+    protected handleReadyEvent = (): void => {
         if (this.options.debug) d(`[${this.url}] Connected!`)
-        this.receivedReady = false
+        this.receivedReady = true
         if (this.currentReconnectionAttempts > 0) {
             if (this.options.debug) d(`[${this.url}] Reconnected!`)
             this.listeners('reconnect').forEach((listener) => listener())
@@ -47,10 +52,11 @@ class TeckosClientWithJWT extends TeckosClient {
             this.currentReconnectDelay = this.options.reconnectionDelay
             this.currentReconnectionAttempts = 0
         }
+        console.log('SENDING TO ALL LISTENERS')
         this.listeners('connect').forEach((listener) => listener())
     }
 
-    protected handleOpen = () => {
+    protected handleOpen = (): void => {
         this.receivedReady = false
         this.once('ready', this.handleReadyEvent)
         if (this.options.debug) d('Connection opened, sending token now')
@@ -61,4 +67,4 @@ class TeckosClientWithJWT extends TeckosClient {
     }
 }
 
-export default TeckosClientWithJWT
+export { TeckosClientWithJWT }

@@ -1,4 +1,4 @@
-import PacketType from './PacketType'
+import { PacketType } from './PacketType'
 
 export interface Packet {
     type: PacketType

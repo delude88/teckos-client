@@ -1,5 +1,7 @@
+export type Listener = (...args: any[]) => void
+
 class SocketEventEmitter<T extends string> {
-    protected maxListeners: number = 50
+    protected maxListeners = 50
 
     protected handlers: {
         [event: string]: ((...args: any[]) => void)[]
@@ -9,8 +11,8 @@ class SocketEventEmitter<T extends string> {
         if (Object.keys(this.handlers).length === this.maxListeners) {
             throw new Error('Max listeners reached')
         }
-        if (typeof listener !== "function") {
-            throw new Error("The given listener is not a function")
+        if (typeof listener !== 'function') {
+            throw new Error('The given listener is not a function')
         }
         this.handlers[event] = this.handlers[event] || []
         this.handlers[event].push(listener)
@@ -21,8 +23,8 @@ class SocketEventEmitter<T extends string> {
         if (Object.keys(this.handlers).length === this.maxListeners) {
             throw new Error('Max listeners reached')
         }
-        if (typeof listener !== "function") {
-            throw new Error("The given listener is not a function")
+        if (typeof listener !== 'function') {
+            throw new Error('The given listener is not a function')
         }
         this.handlers[event] = this.handlers[event] || []
         const onceWrapper = () => {
@@ -59,14 +61,14 @@ class SocketEventEmitter<T extends string> {
 
     public getMaxListeners = (): number => this.maxListeners
 
-    public listeners = (event: T): Function[] => {
+    public listeners = (event: T): Listener[] => {
         if (this.handlers[event]) {
             return [...this.handlers[event]]
         }
         return []
     }
 
-    public rawListeners = (event: T): Function[] => [...this.handlers[event]]
+    public rawListeners = (event: T): Listener[] => [...this.handlers[event]]
 
     public listenerCount = (event: T): number => {
         if (this.handlers[event]) {
@@ -114,4 +116,4 @@ class SocketEventEmitter<T extends string> {
     }
 }
 
-export default SocketEventEmitter
+export { SocketEventEmitter }
