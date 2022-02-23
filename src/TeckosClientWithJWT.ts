@@ -52,7 +52,6 @@ class TeckosClientWithJWT extends TeckosClient {
             this.currentReconnectDelay = this.options.reconnectionDelay
             this.currentReconnectionAttempts = 0
         }
-        console.log('SENDING TO ALL LISTENERS')
         this.listeners('connect').forEach((listener) => listener())
     }
 

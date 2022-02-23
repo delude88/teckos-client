@@ -93,7 +93,7 @@
     "nodemon": "^2.0.13",
     "prettier": "^2.4.1",
     "size-limit": "^5.0.5",
-    "teckos": "^0.5.5",
+    "teckos": "^0.5.7",
     "ts-loader": "^9.2.6",
     "ts-node": "^10.2.1",
     "tsdx": "^0.14.1",
