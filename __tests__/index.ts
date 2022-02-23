@@ -1,6 +1,6 @@
 import 'mocha'
 import {expect} from 'chai'
-import {UWSProvider, App} from 'teckos'
+import {UWSProvider, UWSProviderWithToken, App} from 'teckos'
 import {ITeckosClient, TeckosClientWithJWT} from "../src";
 
 const PORT = 3000
@@ -13,16 +13,18 @@ describe('Example connection using JWT', () => {
     before((done) => {
         // Create server and client
         const app = App()
-        server = new UWSProvider(app)
+        server = new UWSProviderWithToken(app, (reqToken) => {
+            return reqToken === token
+        })
         client = new TeckosClientWithJWT(
-            `ws://localhost:${PORT}`,
-            {
-                reconnection: false,
-            },
-            token,
-            {
-                say: 'hello',
-            }
+          `ws://localhost:${PORT}`,
+          {
+              reconnection: false,
+          },
+          token,
+          {
+              say: 'hello',
+          }
         )
         done()
     })
@@ -36,33 +38,29 @@ describe('Example connection using JWT', () => {
 
     it('Server can be started', (done) => {
         server.listen(3000)
-        done()
+          .then(() => done())
     })
 
     it('Client can connect', (done) => {
-        client.on("connect", () => {
+        client.once("connect", () => {
+            client.disconnect()
             done()
         })
         client.connect()
-        client.disconnect()
     })
-
 
     it('Client can send messages', (done) => {
         server.onConnection(socket => {
-            console.info("Client connected")
-            socket.on("hi", () => {
-                console.info("Saying hello")
+            socket.once("hi", () => {
                 socket.emit("hello")
             })
         })
-        client.on("hello", () => {
-            console.info("Test successfull")
+        client.once("hello", () => {
+            client.disconnect()
             done()
         })
-        expect(client.connected).to.be.false
         client.connect()
-        client.emit("hi")
+        client.once("connect", () => client.emit("hi"))
     })
 
     it('Example connection', (done) => {
@@ -82,28 +80,30 @@ describe('Example connection using JWT', () => {
 
         client.on("hello", () => {
             gotRespond = true
+            console.log("GOT HELLO")
         })
-        client.emit("hi")
-
-        client.emit("asking", ((result) => {
-            gotCallbackAnswered = true
-            expect(result).to.be.equal("answer")
-        }))
 
         client.on("disconnect", () => {
             clientEmittedDisconnect = true
+            console.info("DISCONNECT")
         })
 
+        client.on("connect", () => {
+            client.emit("hi")
+            client.emit("asking", ((result: string) => {
+                gotCallbackAnswered = true
+                expect(result).to.be.equal("answer")
+                client.disconnect()
+            }))
+        })
         client.connect()
-        client.disconnect()
 
         setTimeout(() => {
-            expect(gotRespond).to.be.true
-            expect(gotCallbackAnswered).to.be.true
-            expect(clientEmittedDisconnect).to.be.true
-            expect(serverEmittedDisconnect).to.be.true
+            expect(gotRespond, "got respond").to.be.true
+            expect(gotCallbackAnswered, "got callback result").to.be.true
+            expect(clientEmittedDisconnect, "client emitted disconnect").to.be.true
+            expect(serverEmittedDisconnect, "server emitted disconnect").to.be.true
             done()
-        }, 100)
+        }, 10)
     })
-
 })

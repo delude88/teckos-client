@@ -264,6 +264,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
         if (this.ws !== undefined) {
             this.ws.onclose = () => {}
             this.ws.close()
+            this.listeners('disconnect').forEach((listener) => listener())
         }
     }
 
