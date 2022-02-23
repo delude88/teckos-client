@@ -116,6 +116,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
         }
 
         if (typeof args[args.length - 1] === 'function') {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             this.acks.set(this.fnId, args.pop())
             packet.id = this.fnId
             this.fnId += 1
@@ -152,7 +153,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
             const event = packet.data[0] as SocketEvent
             const args = packet.data.slice(1)
             if (event) {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                 this.listeners(event).forEach((listener) => listener(...args))
             } else {
                 throw new Error(
@@ -200,10 +201,12 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     protected handleClose = (): void => {
         // Stop connection timeout
         if (this.connectionTimeout) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearTimeout(this.connectionTimeout)
         }
         // Stop reconnection timeout
         if (this.reconnectionTimeout) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             clearTimeout(this.reconnectionTimeout)
         }
 
