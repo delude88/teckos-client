@@ -1,13 +1,10 @@
-import debug from "debug";
-import {ITeckosClient, TeckosClientWithJWT} from "../../lib/index.js";
+import {ITeckosClient, TeckosClient, TeckosClientWithJWT} from "../../..";
 
-const d = debug("example");
+const USE_TOKEN = true
+const URL = "ws://localhost:4000";
 
-const printToSent = d.extend("sent");
-const printToReceive = d.extend("received");
-
-
-const URL = "ws://imac.fritz.box:4000";
+const printToSent = (message: string) => console.log(`[SEND] ${message}`)
+const printToReceive = (...message: string[]) => console.log(`[RECEIVED]`, ...message)
 
 const sendExampleMessages = (ws: ITeckosClient) => {
     if (ws.disconnected) {
@@ -28,16 +25,16 @@ const sendExampleMessages = (ws: ITeckosClient) => {
     printToSent("Sending 'personal'");
     ws.emit('personal');
 
-    d("Now sleeping for 5s...");
+    console.log("Now sleeping for 5s...");
 
     setTimeout(() => sendExampleMessages(ws), 5000);
 }
 
 const connect = async (token: string) => {
-    const ws: ITeckosClient = new TeckosClientWithJWT(URL, {
+    const ws = USE_TOKEN ? new TeckosClientWithJWT(URL, {
         reconnection: true,
-        reconnectionAttempts: 5
-    }, token);
+        debug: true
+    }, "mytoken") : new TeckosClient(URL, {reconnection: true, debug: true})
 
     ws.on('connect', () => {
         printToReceive("Connected!");

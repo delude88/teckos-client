@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import * as IsomorphicWebSocket from 'isomorphic-ws'
+import WebSocket from 'isomorphic-ws'
 import { decodePacket, encodePacket } from './util/Converter'
 import { ITeckosClient } from './ITeckosClient'
 import { SocketEventEmitter } from './util/SocketEventEmitter'
@@ -20,7 +20,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
 
     protected readonly options: Options
 
-    ws: IsomorphicWebSocket.WebSocket | undefined
+    protected _ws: WebSocket | undefined
 
     protected currentReconnectDelay: number
 
@@ -45,16 +45,12 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     }
 
     protected attachHandler = (): void => {
-        if (this.ws) {
-            this.ws.onopen = this.handleOpen
-            this.ws.onerror = this.handleError
-            this.ws.onclose = this.handleClose
-            this.ws.onmessage = this.handleMessage
+        if (this._ws) {
+            this._ws.onopen = this.handleOpen
+            this._ws.onerror = this.handleError
+            this._ws.onclose = this.handleClose
+            this._ws.onmessage = this.handleMessage
         }
-    }
-
-    public get webSocket(): IsomorphicWebSocket.WebSocket | undefined {
-        return this.ws
     }
 
     public connect = (): void => {
@@ -62,13 +58,13 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
 
         // This will try to connect immediately
         // eslint-disable-next-line new-cap
-        this.ws = new IsomorphicWebSocket.WebSocket(this.url)
+        this._ws = new WebSocket(this.url)
         // Attach handlers
         this.attachHandler()
         // Handle timeout
         this.connectionTimeout = setTimeout(() => {
-            if (this.ws && this.ws.readyState === 0 /* = CONNECTING */) {
-                this.ws.close()
+            if (this._ws && this._ws.readyState === 0 /* = CONNECTING */) {
+                this._ws.close()
             }
         }, this.options.timeout)
     }
@@ -79,23 +75,27 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     }
 
     protected getConnectionState(): ConnectionState {
-        if (this.ws) {
-            switch (this.ws.readyState) {
-                case 0 /* = CONNECTING */:
-                    return ConnectionState.CONNECTING
-                case 1 /* = OPEN */:
+        if (this._ws) {
+            switch (this._ws.readyState) {
+                case WebSocket.OPEN:
                     return ConnectionState.CONNECTED
-                case 2 /* = CLOSING */:
+                case WebSocket.CONNECTING:
+                    return ConnectionState.CONNECTING
+                case WebSocket.CLOSING:
                     return ConnectionState.DISCONNECTING
-                default: /* 3 = CLOSED */
+                default:
                     return ConnectionState.DISCONNECTED
             }
         }
         return ConnectionState.DISCONNECTED
     }
 
-    public get state(): ConnectionState {
+    get state(): ConnectionState {
         return this.getConnectionState()
+    }
+
+    get ws(): WebSocket | undefined {
+        return this._ws
     }
 
     get connected(): boolean {
@@ -133,17 +133,17 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     }
 
     public sendPackage = (packet: Packet): boolean => {
-        if (this.ws !== undefined && this.ws.readyState === 1 /* = OPEN */) {
+        if (this._ws !== undefined && this._ws.readyState === 1 /* = OPEN */) {
             const buffer = encodePacket(packet)
             if (this.options.debug)
                 console.log(`(teckos:client) [${this.url}] Send packet: ${JSON.stringify(packet)}`)
-            this.ws.send(buffer)
+            this._ws.send(buffer)
             return true
         }
         return false
     }
 
-    protected handleMessage = (msg: IsomorphicWebSocket.MessageEvent): void => {
+    protected handleMessage = (msg: WebSocket.MessageEvent): void => {
         const packet =
             typeof msg.data === 'string'
                 ? (JSON.parse(msg.data) as Packet)
@@ -193,7 +193,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
         this.listeners('connect').forEach((listener) => listener())
     }
 
-    protected handleError = (error: IsomorphicWebSocket.ErrorEvent): void => {
+    protected handleError = (error: WebSocket.ErrorEvent): void => {
         if (this.handlers && this.handlers.error) {
             if (this.options.debug)
                 console.log(
@@ -269,9 +269,9 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     public close = (): void => {
         if (this.options.debug)
             console.log(`(teckos:client) [${this.url}] Closing connection (client-side)`)
-        if (this.ws !== undefined) {
-            this.ws.onclose = () => {}
-            this.ws.close()
+        if (this._ws !== undefined) {
+            this._ws.onclose = () => {}
+            this._ws.close()
             this.listeners('disconnect').forEach((listener) => listener())
         }
     }

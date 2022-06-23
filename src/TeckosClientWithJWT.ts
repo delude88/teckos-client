@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import * as IsomorphicWebSocket from 'isomorphic-ws'
+import WebSocket from 'isomorphic-ws'
 import { TeckosClient } from './TeckosClient'
 import { OptionalOptions, ConnectionState } from './types'
 
@@ -22,16 +22,16 @@ class TeckosClientWithJWT extends TeckosClient {
     }
 
     protected getConnectionState(): ConnectionState {
-        if (this.ws) {
-            switch (this.ws.readyState) {
-                case IsomorphicWebSocket.WebSocket.OPEN:
+        if (this._ws) {
+            switch (this._ws.readyState) {
+                case WebSocket.OPEN:
                     if (this.receivedReady) {
                         return ConnectionState.CONNECTED
                     }
                     return ConnectionState.CONNECTING
-                case IsomorphicWebSocket.WebSocket.CONNECTING:
+                case WebSocket.CONNECTING:
                     return ConnectionState.CONNECTING
-                case IsomorphicWebSocket.WebSocket.CLOSING:
+                case WebSocket.CLOSING:
                     return ConnectionState.DISCONNECTING
                 default:
                     return ConnectionState.DISCONNECTED

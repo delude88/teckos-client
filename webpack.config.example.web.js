@@ -2,20 +2,21 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+		mode: "production",
 		devServer: {
-				contentBase: './public',
+				contentBase: './example/dist/web',
 		},
-		entry: './example/web/index.ts',
+		entry: './example/src/web/index.ts',
 		plugins: [
 				new CleanWebpackPlugin({
-						cleanAfterEveryBuildPatterns: ['public']
+						cleanAfterEveryBuildPatterns: ['./example/dist/web']
 				}),
 				new HtmlWebpackPlugin({
-						template: 'example/web/index.html'
+						template: './example/src/web/index.html'
 				}),
 		],
 		output: {
-				path: __dirname + '/public',
+				path: __dirname + '/example/dist/web',
 				filename: 'build/[name].[contenthash].js'
 		},
 		resolve: {

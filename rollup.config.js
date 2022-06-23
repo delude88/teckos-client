@@ -1,14 +1,14 @@
-import { defineConfig } from 'rollup'
+import {defineConfig} from 'rollup'
 import nodeResolve from '@rollup/plugin-node-resolve'
 import babel from '@rollup/plugin-babel'
 import replace from '@rollup/plugin-replace'
 import typescript from 'rollup-plugin-typescript2'
-import { terser } from 'rollup-plugin-terser'
+import {terser} from 'rollup-plugin-terser'
 
 import pkg from './package.json'
 
 const extensions = ['.ts']
-const noDeclarationFiles = { compilerOptions: { declaration: false } }
+const noDeclarationFiles = {compilerOptions: {declaration: false}}
 
 const babelRuntimeVersion = pkg.dependencies['@babel/runtime'].replace(
     /^[^0-9]*/,
@@ -24,18 +24,18 @@ export default defineConfig([
     // CommonJS
     {
         input: 'src/index.ts',
-        output: { file: 'lib/index.js', format: 'cjs', indent: false },
+        output: {file: 'lib/index.js', format: 'cjs', indent: false},
         external,
         plugins: [
             nodeResolve({
                 extensions
             }),
-            typescript({ useTsconfigDeclarationDir: true }),
+            typescript({useTsconfigDeclarationDir: true}),
             babel({
                 extensions,
                 plugins: [
-                    ['@babel/plugin-transform-runtime', { version: babelRuntimeVersion }],
-                    ['./scripts/mangleErrors.js', { minify: false }]
+                    ['@babel/plugin-transform-runtime', {version: babelRuntimeVersion}],
+                    ['./scripts/mangleErrors.js', {minify: false}]
                 ],
                 babelHelpers: 'runtime'
             })
@@ -45,21 +45,21 @@ export default defineConfig([
     // ES
     {
         input: 'src/index.ts',
-        output: { file: 'es/index.js', format: 'es', indent: false },
+        output: {file: 'es/index.js', format: 'es', indent: false},
         external,
         plugins: [
             nodeResolve({
                 extensions
             }),
-            typescript({ tsconfigOverride: noDeclarationFiles }),
+            typescript({tsconfigOverride: noDeclarationFiles}),
             babel({
                 extensions,
                 plugins: [
                     [
                         '@babel/plugin-transform-runtime',
-                        { version: babelRuntimeVersion, useESModules: true }
+                        {version: babelRuntimeVersion, useESModules: true}
                     ],
-                    ['./scripts/mangleErrors.js', { minify: false }]
+                    ['./scripts/mangleErrors.js', {minify: false}]
                 ],
                 babelHelpers: 'runtime'
             })
@@ -69,20 +69,24 @@ export default defineConfig([
     // ES for Browsers
     {
         input: 'src/index.ts',
-        output: { file: 'es/index.mjs', format: 'es', indent: false },
+        output: {
+            file: 'es/index.mjs', format: 'es', indent: false
+        },
+        external: ["isomorphic-ws"],
         plugins: [
             nodeResolve({
-                extensions
+                extensions,
+                preferBuiltins: "false"
             }),
             replace({
                 preventAssignment: true,
                 'process.env.NODE_ENV': JSON.stringify('production')
             }),
-            typescript({ tsconfigOverride: noDeclarationFiles }),
+            typescript({tsconfigOverride: noDeclarationFiles}),
             babel({
                 extensions,
                 exclude: 'node_modules/**',
-                plugins: [['./scripts/mangleErrors.js', { minify: true }]],
+                plugins: [['./scripts/mangleErrors.js', {minify: true}]],
                 skipPreflightCheck: true,
                 babelHelpers: 'bundled'
             }),
@@ -103,17 +107,21 @@ export default defineConfig([
             file: 'dist/index.js',
             format: 'umd',
             name: 'Teckos Client',
-            indent: false
+            indent: false,
+            globals: {
+                "isomorphic-ws": "Isomorphic WS"
+            }
         },
+        external: ["isomorphic-ws"],
         plugins: [
             nodeResolve({
                 extensions
             }),
-            typescript({ tsconfigOverride: noDeclarationFiles }),
+            typescript({tsconfigOverride: noDeclarationFiles}),
             babel({
                 extensions,
                 exclude: 'node_modules/**',
-                plugins: [['./scripts/mangleErrors.js', { minify: false }]],
+                plugins: [['./scripts/mangleErrors.js', {minify: false}]],
                 babelHelpers: 'bundled'
             }),
             replace({
@@ -126,21 +134,25 @@ export default defineConfig([
     // UMD Production
     {
         input: 'src/index.ts',
+        external: ["isomorphic-ws"],
         output: {
             file: 'dist/index.min.js',
             format: 'umd',
             name: 'Teckos Client',
-            indent: false
+            indent: false,
+            globals: {
+                "isomorphic-ws": "Isomorphic WS"
+            }
         },
         plugins: [
             nodeResolve({
                 extensions
             }),
-            typescript({ tsconfigOverride: noDeclarationFiles }),
+            typescript({tsconfigOverride: noDeclarationFiles}),
             babel({
                 extensions,
                 exclude: 'node_modules/**',
-                plugins: [['./scripts/mangleErrors.js', { minify: true }]],
+                plugins: [['./scripts/mangleErrors.js', {minify: true}]],
                 skipPreflightCheck: true,
                 babelHelpers: 'bundled'
             }),

@@ -1,5 +1,6 @@
-import {ITeckosClient, TeckosClient, TeckosClientWithJWT} from "../..";
+import {ITeckosClient, TeckosClient, TeckosClientWithJWT} from "../../..";
 
+const USE_TOKEN = true
 const URL = "ws://localhost:4000";
 
 const sendingRef = document.getElementById("sending") as HTMLTextAreaElement;
@@ -44,8 +45,6 @@ const sendExampleMessages = (ws: ITeckosClient) => {
 
     setTimeout(() => sendExampleMessages(ws), 5000);
 }
-
-const USE_TOKEN = true
 
 const connect = () => {
     const ws = USE_TOKEN ? new TeckosClientWithJWT(URL, {

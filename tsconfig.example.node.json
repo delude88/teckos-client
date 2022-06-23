@@ -5,19 +5,17 @@
     "target": "esnext",
     "sourceMap": true,
     "strict": true,
-    "outDir": "dist",
+    "outDir": "example/dist/node",
     "esModuleInterop": true
   },
   "lib": [
     "es2015"
   ],
   "include": [
-    "example/node/**/*.ts"
+    "example/src/node/**/*.ts",
+    "types/*.d.ts"
   ],
   "exclude": [
-    "node_modules",
-    "tests",
-    "dist",
-    "backup"
+    "node_modules"
   ]
 }

@@ -10,17 +10,15 @@
     "lib": [
       "dom",
       "es6"
-    ]
+    ],
+    "outDir": "example/dist/web"
   },
   "include": [
-    "example/web/**/*.ts",
+    "example/src/web/**/*.ts",
     "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "./tests",
-    "./dist",
-    "./backup"
   ],
   "compileOnSave": false
 }
