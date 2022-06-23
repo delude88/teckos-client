@@ -1,11 +1,9 @@
-import debug from 'debug'
-import WebSocket from 'isomorphic-ws'
+/* eslint-disable no-console */
+import * as IsomorphicWebSocket from 'isomorphic-ws'
 import { decodePacket, encodePacket } from './util/Converter'
-import { ConnectionState, OptionalOptions, Options, Packet, PacketType, SocketEvent } from './types'
 import { ITeckosClient } from './ITeckosClient'
 import { SocketEventEmitter } from './util/SocketEventEmitter'
-
-const d = debug('teckos:client')
+import { OptionalOptions, Options, SocketEvent, ConnectionState, Packet, PacketType } from './types'
 
 const DEFAULT_OPTIONS: Options = {
     reconnection: true,
@@ -22,7 +20,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
 
     protected readonly options: Options
 
-    ws: WebSocket | undefined
+    ws: IsomorphicWebSocket.WebSocket | undefined
 
     protected currentReconnectDelay: number
 
@@ -55,20 +53,21 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
         }
     }
 
-    public get webSocket(): WebSocket | undefined {
+    public get webSocket(): IsomorphicWebSocket.WebSocket | undefined {
         return this.ws
     }
 
     public connect = (): void => {
-        if (this.options.debug) d(`Connecting to ${this.url}...`)
+        if (this.options.debug) console.log(`(teckos:client) Connecting to ${this.url}...`)
 
         // This will try to connect immediately
-        this.ws = new WebSocket(this.url)
+        // eslint-disable-next-line new-cap
+        this.ws = new IsomorphicWebSocket.WebSocket(this.url)
         // Attach handlers
         this.attachHandler()
         // Handle timeout
         this.connectionTimeout = setTimeout(() => {
-            if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+            if (this.ws && this.ws.readyState === 0 /* = CONNECTING */) {
                 this.ws.close()
             }
         }, this.options.timeout)
@@ -82,13 +81,13 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     protected getConnectionState(): ConnectionState {
         if (this.ws) {
             switch (this.ws.readyState) {
-                case WebSocket.OPEN:
-                    return ConnectionState.CONNECTED
-                case WebSocket.CONNECTING:
+                case 0 /* = CONNECTING */:
                     return ConnectionState.CONNECTING
-                case WebSocket.CLOSING:
+                case 1 /* = OPEN */:
+                    return ConnectionState.CONNECTED
+                case 2 /* = CLOSING */:
                     return ConnectionState.DISCONNECTING
-                default:
+                default: /* 3 = CLOSED */
                     return ConnectionState.DISCONNECTED
             }
         }
@@ -134,21 +133,23 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     }
 
     public sendPackage = (packet: Packet): boolean => {
-        if (this.ws !== undefined && this.ws.readyState === WebSocket.OPEN) {
+        if (this.ws !== undefined && this.ws.readyState === 1 /* = OPEN */) {
             const buffer = encodePacket(packet)
-            if (this.options.debug) d(`[${this.url}] Send packet: ${JSON.stringify(packet)}`)
+            if (this.options.debug)
+                console.log(`(teckos:client) [${this.url}] Send packet: ${JSON.stringify(packet)}`)
             this.ws.send(buffer)
             return true
         }
         return false
     }
 
-    protected handleMessage = (msg: WebSocket.MessageEvent): void => {
+    protected handleMessage = (msg: IsomorphicWebSocket.MessageEvent): void => {
         const packet =
             typeof msg.data === 'string'
                 ? (JSON.parse(msg.data) as Packet)
                 : decodePacket(msg.data as ArrayBuffer)
-        if (this.options.debug) d(`[${this.url}] Got packet: ${JSON.stringify(packet)}`)
+        if (this.options.debug)
+            console.log(`(teckos:client) [${this.url}] Got packet: ${JSON.stringify(packet)}`)
         if (packet.type === PacketType.EVENT) {
             const event = packet.data[0] as SocketEvent
             const args = packet.data.slice(1)
@@ -157,7 +158,7 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
                 this.listeners(event).forEach((listener) => listener(...args))
             } else {
                 throw new Error(
-                    `[teckos-client@${this.url}] Got invalid event message: ${JSON.stringify(
+                    `(teckos-client) [${this.url}] Got invalid event message: ${JSON.stringify(
                         msg.data
                     )}`
                 )
@@ -170,7 +171,9 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
                 this.acks.delete(packet.id)
             }
         } else {
-            throw new Error(`[teckos-client@${this.url}] Got invalid message type: ${packet.type}`)
+            throw new Error(
+                `(teckos-client) [${this.url}] Got invalid message type: ${packet.type}`
+            )
         }
     }
 
@@ -181,19 +184,21 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
             this.currentReconnectionAttempts = 0
 
             // Inform listeners
-            if (this.options.debug) d(`[${this.url}] Reconnected!`)
+            if (this.options.debug) console.log(`(teckos:client) [${this.url}] Reconnected!`)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             this.listeners('reconnect').forEach((listener) => listener())
         }
         // Inform listeners
-        if (this.options.debug) d(`[${this.url}] Connected!`)
+        if (this.options.debug) console.log(`(teckos:client) [${this.url}] Connected!`)
         this.listeners('connect').forEach((listener) => listener())
     }
 
-    protected handleError = (error: WebSocket.ErrorEvent): void => {
+    protected handleError = (error: IsomorphicWebSocket.ErrorEvent): void => {
         if (this.handlers && this.handlers.error) {
             if (this.options.debug)
-                d(`[${this.url}] Got error from server: ${JSON.stringify(error)}`)
+                console.log(
+                    `(teckos:client) [${this.url}] Got error from server: ${JSON.stringify(error)}`
+                )
             this.handlers.error.forEach((listener) => listener(error))
         }
     }
@@ -213,12 +218,14 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
         // Inform listeners
         if (this.currentReconnectionAttempts > 0) {
             if (this.options.debug)
-                d(`[${this.url}] Reconnect #${this.currentReconnectionAttempts} failed!`)
+                console.log(
+                    `(teckos:client) [${this.url}] Reconnect #${this.currentReconnectionAttempts} failed!`
+                )
             this.listeners('reconnect_error').forEach((listener) => {
                 if (listener) listener()
             })
         } else {
-            if (this.options.debug) d(`[${this.url}] Disconnected!`)
+            if (this.options.debug) console.log(`(teckos:client) [${this.url}] Disconnected!`)
             this.listeners('disconnect').forEach((listener) => {
                 if (listener) listener()
             })
@@ -243,16 +250,16 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
                 )
 
                 if (this.options.debug)
-                    d(
-                        `[${this.url}] Try reconnecting (${this.currentReconnectionAttempts}/${this.options.reconnectionAttempts}) in ${timeout}ms to ${this.url}...`
+                    console.log(
+                        `(teckos:client) [${this.url}] Try reconnecting (${this.currentReconnectionAttempts}/${this.options.reconnectionAttempts}) in ${timeout}ms to ${this.url}...`
                     )
                 this.reconnectionTimeout = setTimeout(() => {
                     this.reconnect()
                 }, timeout)
             } else {
                 if (this.options.debug)
-                    d(
-                        `[${this.url}] Reconnection maximum of ${this.options.reconnectionAttempts} reached`
+                    console.log(
+                        `(teckos:client) [${this.url}] Reconnection maximum of ${this.options.reconnectionAttempts} reached`
                     )
                 this.listeners('reconnect_failed').forEach((listener) => listener())
             }
@@ -260,7 +267,8 @@ class TeckosClient extends SocketEventEmitter<SocketEvent> implements ITeckosCli
     }
 
     public close = (): void => {
-        if (this.options.debug) d(`[${this.url}] Closing connection (client-side)`)
+        if (this.options.debug)
+            console.log(`(teckos:client) [${this.url}] Closing connection (client-side)`)
         if (this.ws !== undefined) {
             this.ws.onclose = () => {}
             this.ws.close()

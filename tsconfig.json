@@ -1,34 +1,21 @@
 {
   "compilerOptions": {
-    "module": "esnext",
-    "lib": [
-      "esnext",
-      "dom"
-    ],
-    "target": "es5",
-    "importHelpers": true,
-    "declaration": true,
-    "sourceMap": true,
     "strict": true,
-    "noImplicitReturns": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "lib": ["dom", "es2017"],
+    "jsx": "react",
+    "declaration": true,
+    "declarationDir": "./types",
+    "sourceMap": true,
+    "removeComments": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "outDir": "lib",
-    "forceConsistentCasingInFileNames": true,
-    "allowJs": false
+    "baseUrl": "./"
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "./node_modules",
-    "./tests",
-    "./dist",
-    "./backup",
-    "./example"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

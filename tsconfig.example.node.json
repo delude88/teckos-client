@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "es5",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "target": "esnext",
     "sourceMap": true,
     "strict": true,
     "outDir": "dist",
@@ -11,13 +12,12 @@
     "es2015"
   ],
   "include": [
-    "example/node/**/*.ts",
-    "src/**/*.ts"
+    "example/node/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "./tests",
-    "./dist",
-    "./backup"
+    "tests",
+    "dist",
+    "backup"
   ]
 }

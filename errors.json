@@ -1,0 +1,6 @@
+{
+  "0": "(teckos-client) [] Got invalid event message: ",
+  "1": "(teckos-client) [] Got invalid message type: ",
+  "2": "Max listeners reached",
+  "3": "The given listener is not a function"
+}

@@ -1,10 +1,10 @@
-import WebSocket from 'isomorphic-ws'
+import * as IsomorphicWebSocket from 'isomorphic-ws'
 import { ConnectionState, Packet, SocketEvent } from './types'
 import { SocketEventEmitter } from './util/SocketEventEmitter'
 
 interface ITeckosClient extends SocketEventEmitter<SocketEvent> {
-    ws: WebSocket | undefined
-    readonly webSocket: WebSocket | undefined
+    ws: IsomorphicWebSocket.WebSocket | undefined
+    readonly webSocket: IsomorphicWebSocket.WebSocket | undefined
     readonly state: ConnectionState
     readonly connected: boolean
     readonly disconnected: boolean

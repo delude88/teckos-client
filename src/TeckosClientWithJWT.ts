@@ -1,9 +1,7 @@
-import debug from 'debug'
-import WebSocket from 'isomorphic-ws'
+/* eslint-disable no-console */
+import * as IsomorphicWebSocket from 'isomorphic-ws'
 import { TeckosClient } from './TeckosClient'
 import { OptionalOptions, ConnectionState } from './types'
-
-const d = debug('teckos:client')
 
 class TeckosClientWithJWT extends TeckosClient {
     protected readonly token: string
@@ -26,14 +24,14 @@ class TeckosClientWithJWT extends TeckosClient {
     protected getConnectionState(): ConnectionState {
         if (this.ws) {
             switch (this.ws.readyState) {
-                case WebSocket.OPEN:
+                case IsomorphicWebSocket.WebSocket.OPEN:
                     if (this.receivedReady) {
                         return ConnectionState.CONNECTED
                     }
                     return ConnectionState.CONNECTING
-                case WebSocket.CONNECTING:
+                case IsomorphicWebSocket.WebSocket.CONNECTING:
                     return ConnectionState.CONNECTING
-                case WebSocket.CLOSING:
+                case IsomorphicWebSocket.WebSocket.CLOSING:
                     return ConnectionState.DISCONNECTING
                 default:
                     return ConnectionState.DISCONNECTED
@@ -43,10 +41,10 @@ class TeckosClientWithJWT extends TeckosClient {
     }
 
     protected handleReadyEvent = (): void => {
-        if (this.options.debug) d(`[${this.url}] Connected!`)
+        if (this.options.debug) console.log(`(teckos:client) [${this.url}] Connected!`)
         this.receivedReady = true
         if (this.currentReconnectionAttempts > 0) {
-            if (this.options.debug) d(`[${this.url}] Reconnected!`)
+            if (this.options.debug) console.log(`(teckos:client) [${this.url}] Reconnected!`)
             this.listeners('reconnect').forEach((listener) => listener())
             // Reset reconnection settings to default
             this.currentReconnectDelay = this.options.reconnectionDelay
@@ -58,7 +56,7 @@ class TeckosClientWithJWT extends TeckosClient {
     protected handleOpen = (): void => {
         this.receivedReady = false
         this.once('ready', this.handleReadyEvent)
-        if (this.options.debug) d('Connection opened, sending token now')
+        if (this.options.debug) console.log(`(teckos:client) Connection opened, sending token now`)
         this.emit('token', {
             token: this.token,
             ...this.initialData,

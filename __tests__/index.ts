@@ -1,6 +1,4 @@
-import 'mocha'
-import {expect} from 'chai'
-import {UWSProvider, UWSProviderWithToken, App} from 'teckos'
+import {uws, UWSProvider, UWSProviderWithToken} from 'teckos'
 import {ITeckosClient, TeckosClientWithJWT} from "../src";
 
 const PORT = 3000
@@ -10,9 +8,9 @@ describe('Example connection using JWT', () => {
     let server: UWSProvider
     let client: ITeckosClient
 
-    before((done) => {
+    beforeAll((done) => {
         // Create server and client
-        const app = App()
+        const app = uws.App()
         server = new UWSProviderWithToken(app, (reqToken) => {
             return reqToken === token
         })
@@ -29,7 +27,7 @@ describe('Example connection using JWT', () => {
         done()
     })
 
-    after((done) => {
+    afterAll((done) => {
         if (client && client.connected) {
             client.disconnect()
         }
@@ -92,17 +90,17 @@ describe('Example connection using JWT', () => {
             client.emit("hi")
             client.emit("asking", ((result: string) => {
                 gotCallbackAnswered = true
-                expect(result).to.be.equal("answer")
+                expect(result).toEqual("answer")
                 client.disconnect()
             }))
         })
         client.connect()
 
         setTimeout(() => {
-            expect(gotRespond, "got respond").to.be.true
-            expect(gotCallbackAnswered, "got callback result").to.be.true
-            expect(clientEmittedDisconnect, "client emitted disconnect").to.be.true
-            expect(serverEmittedDisconnect, "server emitted disconnect").to.be.true
+            expect(gotRespond).toBeTruthy()
+            expect(gotCallbackAnswered).toBeTruthy()
+            expect(clientEmittedDisconnect).toBeTruthy()
+            expect(serverEmittedDisconnect).toBeTruthy()
             done()
         }, 10)
     })
